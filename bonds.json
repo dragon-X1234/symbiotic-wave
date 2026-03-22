@@ -1,0 +1,9 @@
+{
+  "bonds": [
+    {"from": "general", "to": "reddot", "strength": 1.0},
+    {"from": "general", "to": "2x", "strength": 0.9},
+    {"from": "general", "to": "4x", "strength": 1.2},
+    {"from": "general", "to": "freelook", "strength": 0.8},
+    {"from": "reddot", "to": "awm", "strength": 0.7}
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "atoms": {
+    "general": {
+      "element": "CARBON",
+      "valence": 4,
+      "name": "General",
+      "color": "#00f2ff",
+      "default": 100
+    },
+    "reddot": {
+      "element": "NITROGEN",
+      "valence": 3,
+      "name": "Red Dot",
+      "color": "#bd00ff",
+      "default": 95
+    },
+    "2x": {
+      "element": "NITROGEN",
+      "valence": 3,
+      "name": "2x Scope",
+      "color": "#bd00ff",
+      "default": 75
+    },
+    "4x": {
+      "element": "OXYGEN",
+      "valence": 2,
+      "name": "4x Scope",
+      "color": "#ff006e",
+      "default": 50
+    },
+    "awm": {
+      "element": "HYDROGEN",
+      "valence": 1,
+      "name": "AWM Scope",
+      "color": "#ffffff",
+      "default": 30
+    },
+    "freelook": {
+      "element": "SULFUR",
+      "valence": 6,
+      "name": "Free Look",
+      "color": "#ffaa00",
+      "default": 110
+    }
+  }
+}
