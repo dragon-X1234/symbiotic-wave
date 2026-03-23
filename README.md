@@ -18,10 +18,10 @@
 ## Installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOURUSERNAME/MN-SOS/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/dragon-X1234/symbiotic-wave/main/install.sh | bash
 **Or manual:
 
-```git clone https://github.com/YOURUSERNAME/MN-SOS.git
+```git clone https://github.com/dragon-X1234/symbiotic-wave.git
 cd MN-SOS
 pip install -r requirements.txt
 python3 main.py
