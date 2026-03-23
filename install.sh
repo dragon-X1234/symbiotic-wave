@@ -1,5 +1,5 @@
 #!/bin/bash
-# Symbiote v3.1.0 "Evo" Installer
+# Symbiote v3.1.3 "Evo" Installer
 # Repo: dragon-X1234/symbiotic-wave
 
 set -e
@@ -7,7 +7,7 @@ set -e
 REPO_OWNER="dragon-X1234"
 REPO_NAME="symbiotic-wave"
 RAW_URL="https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main"
-VERSION="3.1.0"
+VERSION="3.1.3"
 
 # --- ImGui "Evo" UI Theme ---
 C_BLUE="\e[38;5;33m"
@@ -46,12 +46,16 @@ if [[ "$PREFIX" == *"com.termux"* ]]; then
     INSTALL_DIR="$HOME/.symbiote"
     BIN_DIR="$PREFIX/bin"
     ui_log "Platform: Termux (Android)"
-    ui_log "Optimizing for ARM/AARCH64..."
     
-    # Pre-emptively fix the Scikit-Learn/Numpy hang
+    ui_log "Synchronizing mirrors..."
     pkg update -y
-    pkg install python build-essential binutils python-numpy python-scikit-learn python-pillow -y
-    ui_ok "Termux binary mirrors synchronized"
+    pkg install termux-tools tur-repo -y || true
+    pkg update -y
+    
+    ui_log "Installing binary algebra & GUI backends..."
+    # Added python-tkinter for customtkinter support
+    pkg install python build-essential binutils libopenblas python-numpy python-scikit-learn python-pillow python-tkinter -y
+    ui_ok "Termux environment stabilized"
 else
     INSTALL_DIR="$HOME/.local/share/symbiote"
     BIN_DIR="$HOME/.local/bin"
@@ -67,9 +71,10 @@ fi
 # --- Step 2: Architecture ---
 ui_step 2 "Virtualizing Directory Structure"
 mkdir -p "$INSTALL_DIR"/{core,interface,utils,config}
-touch "$INSTALL_DIR/interface/__init__.py"
-touch "$INSTALL_DIR/utils/__init__.py"
-touch "$INSTALL_DIR/config/__init__.py"
+# Ensure package capability
+for dir in core interface utils config; do
+    touch "$INSTALL_DIR/$dir/__init__.py"
+done
 echo "$VERSION" > "$INSTALL_DIR/.version"
 ui_ok "Filesystem initialized at $INSTALL_DIR"
 
@@ -127,32 +132,39 @@ ui_ok "Source code synchronized"
 
 # --- Step 4: Neural Mapping ---
 ui_step 4 "Binding Neural Dependencies"
-# Since we installed numpy/scikit-learn via pkg, pip will see them as satisfied
-# This prevents the "Building Wheel" hang
-pip3 install --user -r "$INSTALL_DIR/requirements.txt" 2>/dev/null || \
-pip3 install -r "$INSTALL_DIR/requirements.txt" 2>/dev/null || true
-ui_ok "Python environment compiled"
+ui_log "Finalizing Python modules..."
+# Added --break-system-packages for PEP 668 compatibility and --no-cache-dir to save space
+PIP_CMD="pip3 install --user --prefer-binary --no-cache-dir --break-system-packages"
+$PIP_CMD -r "$INSTALL_DIR/requirements.txt" 2>/dev/null || \
+pip3 install --prefer-binary -r "$INSTALL_DIR/requirements.txt" 2>/dev/null || true
+ui_ok "Neural environment compiled"
 
 # --- Step 5: Integration ---
 ui_step 5 "Injecting Execution Hooks"
 cat > "$BIN_DIR/symbiote" << EOF
 #!/bin/bash
 export PYTHONPATH="${INSTALL_DIR}:\$PYTHONPATH"
-export TERMUX_VERSION="3.1.0"
+export TERMUX_VERSION="${VERSION}"
+# Fix for GUI apps in some Termux setups
+export DISPLAY=:0 2>/dev/null || true 
 cd "${INSTALL_DIR}"
 python3 main.py "\$@"
 EOF
 chmod +x "$BIN_DIR/symbiote"
 
-# Update script link
-cat > "$BIN_DIR/symbiote-update" << EOF
-#!/bin/bash
-curl -fsSL ${RAW_URL}/install.sh | bash
-EOF
-chmod +x "$BIN_DIR/symbiote-update"
+# Path Check & Fix
+if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
+    ui_log "Patching PATH variable..."
+    SHELL_CONFIG="$HOME/.bashrc"
+    [ -f "$HOME/.zshrc" ] && SHELL_CONFIG="$HOME/.zshrc"
+    echo "export PATH=\"\$PATH:$BIN_DIR\"" >> "$SHELL_CONFIG"
+    # Execute immediately for current session
+    export PATH="$PATH:$BIN_DIR"
+fi
 
 ui_ok "Symbiote bridge established"
 draw_footer
 
 echo -e "\n${C_CYAN}SYSTEM READY.${C_RESET}"
-echo -e "${C_WHITE}Type '${C_GREEN}symbiote${C_WHITE}' to initialize.${C_RESET}\n"
+echo -e "${C_WHITE}Type '${C_GREEN}symbiote${C_WHITE}' to initialize.${C_RESET}"
+echo -e "${C_GRAY}(Note: If command not found, restart Termux or type 'source ~/.bashrc')${C_RESET}\n"
